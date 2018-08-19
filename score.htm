@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="images/logo/small_logo.ico">	
+	<title>SoSo - 智能诊股</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron.css" rel="stylesheet">
+
+
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui/demo/demo.css">
+    <script src="static/jquery/1.12.4/jquery.min.js"></script>
+    <script src="static/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/jquery-easyui/jquery.easyui.min.js"></script>
+
+    <script>
+      //var serverRootUrl = "https://souhaogu.cn";
+      //var serverRootUrl = "http://127.0.0.1:8080";
+      var serverRootUrl = "http://192.168.61.129:8080";
+      if (window.location.host != ''){
+        var curUrl = window.location.href;
+        var curPathName = window.location.pathname;
+        var pos = curUrl.indexOf(curPathName);
+        serverRootUrl = curUrl.substring(0,pos);
+      }
+
+      myloader = function(param,success,error){
+        var q = param.q || '';
+        if (q.length < 2){
+          success({});
+          return false
+        }
+        $.ajax({
+          url: serverRootUrl + '/stock_quote/stockBasic/getStockBasicsOfLikeStr.do',
+          type: "GET",
+          dataType: 'json',
+          data: {
+            likeStr: q
+          },
+          success: function(result){
+            var list = result.result;
+            var items = $.map(list, function(item,index){
+              return {
+                id: item.stockCode,
+                name: item.stockName + "(" + item.stockCode + ")"
+              };
+            });
+            success(items);
+          },
+          error: function(){
+            error.apply(this, arguments);
+          }
+        });
+      };
+
+      myselect = function(param){
+        var stockCode = param.id;
+        $.ajax({
+          url: serverRootUrl + '/stock_score/stockScore/queryLongScore.do?stockCode=SH600000',
+          type: "GET",
+          dataType: 'json',
+          data: {
+            stockCode: stockCode
+          },
+          success: function(result){
+            //{"result":{"totalScore":80.0,"stockDe\ailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"industryDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"ideaDetailScoreMap":{"ai":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}},"marketDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}}
+            var scoreVo = result.result;
+            var divContainer = $("#check_result");
+            if (divContainer != null){
+              var tableHtml = "<table>" +
+                  "<tr><td>个股</td><td>"+ scoreVo.stockDetailScoreVo.safetyScore +"</td></tr>" +
+                  "<tr><td>行业</td><td>"+ scoreVo.industryDetailScoreVo.safetyScore +"</td></tr>" +
+                  "<tr><td>市场</td><td>"+ scoreVo.marketDetailScoreVo.safetyScore +"</td></tr>";
+              var m = scoreVo.ideaDetailScoreMap;
+              if (m != null){
+                for (var key in m) {
+                  var item = m[key];
+                  tableHtml = tableHtml +
+                    "<tr><td>概念[" + key +"]</td><td>"+ item.safetyScore +"</td></tr>";
+                }
+              }
+
+              tableHtml = tableHtml +
+                  "<tr><td>综合得分</td><td>"+ scoreVo.totalScore +"</td></tr>" +
+                  "</table>";
+              divContainer.html(tableHtml);
+            }
+          },
+          error: function(){
+            error.apply(this, arguments);
+          }
+        });
+      }
+    </script>
+
+  </head>
+
+  <body>
+    <div id="stock_code" class="container" align="center">
+      <div class="input-group col-lg-3 col-md-3" style="margin-top:0px positon:relative margin-bottom:20px">
+        <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
+               title="请输入股票代码/简拼/全名"
+               placeholder="请输入股票代码/简拼/全名"
+               data-options="loader: myloader,
+                    onSelect:myselect,
+                    mode: 'remote',
+                    valueField: 'id',
+                    textField: 'name'"/>
+      </div>
+    </div>
+
+
+      <br>
+      <br>
+      <br>
+
+    <div id="check_result" class="row container" align="center">
+      <br>
+      <br>
+      <br>
+      <br>
+    </div>
+
+
+  </body>
+</html>

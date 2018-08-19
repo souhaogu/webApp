@@ -15,6 +15,10 @@
 
     <!-- Custom styles for this template -->
     <link href="css/jumbotron.css" rel="stylesheet">
+
+    <script src="static/jquery/1.12.4/jquery.min.js"></script>
+    <script src="static/bootstrap/js/bootstrap.min.js"></script>
+
   </head>
 
   <body>
@@ -39,80 +43,43 @@
               <div class="form-group">
                 <span class="icon-bar right"><a href="register.htm">没有帐号，立即注册</a></span>
               </div>
-              <button type="submit" class="btn btn-link">登录</button>
+              <button type="button" class="btn btn-link">登录</button>
             </form>
           </div>
         </div>
 
     </nav>
+    <br/>
+
+    <!--<div class="row">-->
+      <!--<div class="col-lg-1 col-md-1"></div>-->
+      <!--<div class="col-lg-7 col-md-7">-->
+        <!--<h4 style="color:silver">网站建设中，敬请期待...</h4>-->
+      <!--</div>-->
+      <!--<div class="col-lg-4 col-md-4"></div>-->
+    <!--</div>-->
 
     <br/>
 
-    <div class="row">
-      <div class="col-lg-1 col-md-1"></div>
-      <div class="col-lg-7 col-md-7">
-        <h4 style="color:silver">网站建设中，敬请期待...</h4>
-      </div>
-      <div class="col-lg-4 col-md-4"></div>
+
+    <div class="row" style="width: 100%">
+      <iframe name="main_frame" src="score.htm" width="100%" height="700px" frameborder="no" border="0" marginwidth="0"
+              marginheight=" 0" scrolling="no" allowtransparency="yes"></iframe>
     </div>
 
-    <br/>
-
-    <div id="stock_code" class="container" align="center">
-      <div class="row">
-      </div>
-
-      <div class="input-group col-lg-5 col-md-5" style="margin-top:0px positon:relative">
-        <input type="text" class="form-control" placeholder="请输入股票代码/简拼/全名"/>
-        <span class="input-group-btn">
-          <button class="btn btn-search" style="margin-left:0px; background-color: #00B0E8; color:white;">So 一下</button>
-        </span>
-      </div>
-    </div>
-
-    <div id="check_result" class="row container">
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-    </div>
 
     <hr>
 
-    <footer class="row">
+    <footer class="row" style="width: 100%">
       <div class="container" align="center">
         <p>
-        <a href="#">设为首页</a>  <a href="index_company.htm">@2018 SoSo AI</a> <a href="links.htm">友情链接</a>
+          <a href="">首页</a>
+          <a href="company.htm" target="main_frame">@2018 SoSo AI</a>
+          <a href="links.htm" target="main_frame">友情链接</a>
         </p>
       </div>
     </footer>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/jquery/1.12.4/jquery.min.js"></script>
-    <script src="static/bootstrap/js/bootstrap.min.js"></script>
+
   </body>
 </html>
