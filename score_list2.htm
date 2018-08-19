@@ -78,8 +78,7 @@
           success: function(result){
             //{"result":{"totalScore":80.0,"stockDe\ailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"industryDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"ideaDetailScoreMap":{"ai":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}},"marketDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}}
             var scoreVo = result.result;
-            setTableResult(scoreVo);
-            setChartResult(scoreVo);
+            setResult(scoreVo);
           },
           error: function(){
             error.apply(this, arguments);
@@ -87,28 +86,41 @@
         })
       };
 
-      setTableResult = function (scoreVo) {
-        var divTable = $("#table_result");
+      setResult = function (scoreVo) {
+        //var divTable = window.document.getElementById('div_result');
+        var divTable = $('#div_result');
         if (divTable != null){
-          var tableHtml = "<table class=\"table table-striped .table-bordered\">" +
-                  "<tr><th></th><th>安全</th><th>财务</th><th>趋势</th><th>活跃</th><th>事件</th></tr>" +
-                  "<tr><td>个股</td><td>"+ scoreVo.stockDetailScoreVo.safetyScore + "</td><td>" + scoreVo.stockDetailScoreVo.accountScore + "</td><td>" + scoreVo.stockDetailScoreVo.directionScore + "</td><td>" + scoreVo.stockDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.stockDetailScoreVo.eventScore + "</td></tr>" +
-                  "<tr><td>行业</td><td>"+ scoreVo.industryDetailScoreVo.safetyScore + "</td><td>" + scoreVo.industryDetailScoreVo.accountScore + "</td><td>" + scoreVo.industryDetailScoreVo.directionScore + "</td><td>" + scoreVo.industryDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.industryDetailScoreVo.eventScore + "</td></tr>" +
-                  "<tr><td>市场</td><td>"+ scoreVo.marketDetailScoreVo.safetyScore + "</td><td>" + scoreVo.marketDetailScoreVo.accountScore + "</td><td>" + scoreVo.marketDetailScoreVo.directionScore + "</td><td>" + scoreVo.marketDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.marketDetailScoreVo.eventScore + "</td></tr>";
+          var htmlStr = getScoreDetailHtml("个股(Stock)", scoreVo.stockDetailScoreVo);
+          htmlStr += getScoreDetailHtml("行业(Industry)", scoreVo.industryDetailScoreVo);
+          htmlStr += getScoreDetailHtml("市场(Market)", scoreVo.marketDetailScoreVo);
+
           var m = scoreVo.ideaDetailScoreMap;
           if (m != null){
             for (var key in m) {
-              var item = m[key];
-              tableHtml = tableHtml +
-              "<tr><td>概念[" + key +"]</td><td>"+ item.safetyScore + "</td><td>" + item.accountScore + "</td><td>" + item.directionScore + "</td><td>" + item.vitalityScore + "</td><td>" + item.eventScore + "</td></tr>";
+              var legend = "概念_" + key +"(Idea_" + key + ")";
+              var ideaDetailScoreVo = m[key];
+              htmlStr += getScoreDetailHtml(legend, ideaDetailScoreVo);
             }
           }
 
-          tableHtml = tableHtml +
-          "<tr><td>综合得分</td><td colspan='5'>"+ scoreVo.totalScore +"</td></tr>" +
-          "</table>";
-          divTable.html(tableHtml);
+          htmlStr +=
+            "<table class=\"table table-striped table-bordered\" width=\"95%\">" +
+            "<tr><td>综合得分</td><td colspan='2'>"+ scoreVo.totalScore +"</td></tr>" +
+            "</table>";
+          divTable.html(htmlStr);
         }
+      }
+
+      getScoreDetailHtml = function(detailKey, detailScore){
+        var detailTableHtml = "<table class=\"table table-striped table-bordered\" width=\"55%\">" +
+                "<tr><th colspan='2'>"+ detailKey +" </th></tr>" +
+                "<tr><td>安全</td><td>" + detailScore.safetyScore + "</td></tr>" +
+                "<tr><td>财务</td><td>" + detailScore.accountScore + "</td></tr>" +
+                "<tr><td>趋势</td><td>" + detailScore.directionScore + "</td></tr>" +
+                "<tr><td>活跃</td><td>" + detailScore.vitalityScore + "</td></tr>" +
+                "<tr><td>事件</td><td>" + detailScore.eventScore + "</td></tr>" +
+                "</table><br>"
+        return detailTableHtml;
       }
 
       setChartResult = function (scoreVo) {
@@ -195,20 +207,10 @@
       </div>
     </div>
 
-    <div class="row"  align="center">
-      <table>
-        <tr>
-          <td>
-            <div id="table_result" class="container">
-            </div>
-          </td>
-          <td>
-            <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-            <div id="chart_result" style="width: 600px; height:600px;">
-            </div>
-          </td>
-        </tr>
-      </table>
+    <br>
+
+    <div id="div_result" class="container"  style="height:650px; width:100%; overflow:scroll">
+      <table align="center"></table>
     </div>
 
   </body>
