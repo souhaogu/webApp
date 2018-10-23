@@ -123,9 +123,9 @@
       getScoreDetailHtml = function(keyCaptionData){
         var detailScore = keyCaptionData.data;
         var detailTableHtml =
-                "<tr><td rowspan='5' width='200px'>"+ keyCaptionData.caption + "</td><td rowspan='5' width='500px'>" +
+                "<tr><td rowspan='5' width='20%'>"+ keyCaptionData.caption + "</td><td rowspan='5' width='40%'>" +
                 "<div id='div_"+ keyCaptionData.key +"' style=\"height:350px; width:350px\"  align=\"center\"></div></td>" +
-                "<td>安全</td><td>" + detailScore.safetyScore + "</td></tr>" +
+                "<td style=\"width='20%'\">安全</td><td style='20%'>" + detailScore.safetyScore + "</td></tr>" +
                 "<tr><td>财务</td><td>" + detailScore.accountScore + "</td></tr>" +
                 "<tr><td>趋势</td><td>" + detailScore.directionScore + "</td></tr>" +
                 "<tr><td>活跃</td><td>" + detailScore.vitalityScore + "</td></tr>" +
@@ -191,8 +191,9 @@
   </head>
 
   <body>
-    <div id="stock_code" class="container" align="center">
-      <div class="input-group col-lg-3 col-md-3" style="margin-top:0px positon:relative margin-bottom:20px">
+    <div id="stock_code" class="row">
+      <div class="col-lg-5 col-md-5 col-xs-1-5"></div>
+      <div class="input-group col-lg-2 col-md-2 col-xs-2" style="margin-top:0px positon:relative margin-bottom:20px">
         <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
                title="请输入股票代码/简拼/全名"
                placeholder="请输入股票代码/简拼/全名"
@@ -202,13 +203,16 @@
                     valueField: 'id',
                     textField: 'name'"/>
       </div>
+      <div class="col-lg-5 col-md-5 col-xs-5"></div>
     </div>
+    <br><br>
 
-    <br>
-
-    <div id="div_result" class="container"  style="height:650px; width:100%; overflow:scroll">
-      <table align="center"></table>
+    <div class="row">
+      <div class="col-lg-2 col-md-2 col-xs-2"></div>
+      <div id="div_result" class="col-lg-8 col-md-8 col-xs-8"  style="height:650px; width:100%; overflow:scroll">
+        <table align="center"></table>
+      </div>
+      <div class="col-lg-2 col-md-2 col-xs-2"></div>
     </div>
-
   </body>
 </html>
