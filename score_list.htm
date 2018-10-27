@@ -29,6 +29,7 @@
     <script>
         var quoteServerRootUrl = "https://quote.souhaogu.cn/stock_quote";
         var scoreServerRootUrl = "https://souhaogu.cn/stock_score";
+//        var scoreServerRootUrl = "http://localhost:8080/stock_score";
         if (window.location.host != '') {
             var curUrl = window.location.href;
             var curPathName = window.location.pathname;
@@ -87,7 +88,9 @@
                         var stockVo = result.result;
                         $("#td_stockCode").html(stockVo.stockCode);
                         $("#td_stockName").html(stockVo.stockName);
-                        $("#td_listDate").html(stockVo.listDate);
+                        var listDateStr = stockVo.listDate;
+                        listDateStr = listDateStr.substr(0,4) + "-" + listDateStr.substr(4,2) + "-" + listDateStr.substr(6,2);
+                        $("#td_listDate").html(listDateStr);
                     } else {
                         window.alert(result.error);
                     }
