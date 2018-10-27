@@ -1,14 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="images/logo/small_logo.ico">	
-	<title>SoSo - 智能诊股</title>
+    <link rel="icon" href="images/logo/small_logo.ico">
+    <title>股票分，给你的股票打个分</title>
 
     <!-- Bootstrap core CSS -->
     <link href="static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -27,173 +27,142 @@
     <script src="static/echarts/js/echarts.min.js"></script>
 
     <script>
-      //var serverRootUrl = "https://souhaogu.cn";
-      //var serverRootUrl = "http://127.0.0.1:8080";
-      var serverRootUrl = "http://192.168.61.129:8080";
-      if (window.location.host != ''){
-        var curUrl = window.location.href;
-        var curPathName = window.location.pathname;
-        var pos = curUrl.indexOf(curPathName);
-        serverRootUrl = curUrl.substring(0,pos);
-      }
-
-      myloader = function(param,success,error){
-        var q = param.q || '';
-        if (q.length < 2){
-          success({});
-          return false
+        var quoteServerRootUrl = "https://quote.souhaogu.cn/stock_quote";
+        var scoreServerRootUrl = "https://souhaogu.cn/stock_score";
+        if (window.location.host != '') {
+            var curUrl = window.location.href;
+            var curPathName = window.location.pathname;
+            var pos = curUrl.indexOf(curPathName);
+            serverRootUrl = curUrl.substring(0, pos);
         }
-        $.ajax({
-          url: serverRootUrl + '/stock_quote/stockBasic/getStockBasicsOfLikeStr.do',
-          type: "GET",
-          dataType: 'json',
-          data: {
-            likeStr: q
-          },
-          success: function(result){
-            var list = result.result;
-            var items = $.map(list, function(item,index){
-              return {
-                id: item.stockCode,
-                name: item.stockName + "(" + item.stockCode + ")"
-              };
-            });
-            success(items);
-          },
-          error: function(){
-            error.apply(this, arguments);
-          }
-        });
-      };
 
-      myselect = function(param){
-        var stockCode = param.id;
-        $.ajax({
-          url: serverRootUrl + '/stock_score/stockScore/queryLongScore.do?stockCode=SH600000',
-          type: "GET",
-          dataType: 'json',
-          data: {
-            stockCode: stockCode
-          },
-          success: function(result){
-            //{"result":{"totalScore":80.0,"stockDe\ailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"industryDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"ideaDetailScoreMap":{"ai":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}},"marketDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}}
-            var scoreVo = result.result;
-            setResult(scoreVo);
-          },
-          error: function(){
-            error.apply(this, arguments);
-          }
-        })
-      };
-
-      setResult = function (scoreVo) {
-        //var divTable = window.document.getElementById('div_result');
-        var divTable = $('#div_result');
-        if (divTable != null) {
-          var keyCaptionData_arr = new Array();
-          keyCaptionData_arr[0] = {key: 'Stock', caption: '个股', data: scoreVo.stockDetailScoreVo};
-          keyCaptionData_arr[1] = {key: 'Industry', caption: '行业', data: scoreVo.industryDetailScoreVo};
-          keyCaptionData_arr[2] = {key: 'Market', caption: '市场', data: scoreVo.marketDetailScoreVo};
-          var index = 3;
-          var m = scoreVo.ideaDetailScoreMap;
-          if (m != null) {
-            for (var ideaKey in m) {
-              var legend = "概念_" + ideaKey;
-              var ideaDetailScoreVo = m[ideaKey];
-              keyCaptionData_arr[index] = {key: "Idea_" + ideaKey, caption: legend, data: ideaDetailScoreVo};
-              index++;
+        myloader = function (param, success, error) {
+            var q = param.q || '';
+            if (q.length < 2) {
+                success({});
+                return false
             }
-          }
-
-          var htmlStr = "<table class=\"table table-striped table-bordered\">";
-          for (var index in keyCaptionData_arr){
-            htmlStr += getScoreDetailHtml(keyCaptionData_arr[index]);
-          }
-          htmlStr +=
-            "<tr><td>综合得分</td><td colspan='3'>"+ scoreVo.totalScore +"</td></tr>" +
-            "</table>";
-          divTable.html(htmlStr);
-
-          for (var index in keyCaptionData_arr){
-            setDetailScoreChart(keyCaptionData_arr[index]);
-          }
-        }
-      }
-
-      getScoreDetailHtml = function(keyCaptionData){
-        var detailScore = keyCaptionData.data;
-        var detailTableHtml =
-                "<tr><td rowspan='5' width='20%'>"+ keyCaptionData.caption + "</td><td rowspan='5' width='40%'>" +
-                "<div id='div_"+ keyCaptionData.key +"' style=\"height:350px; width:350px\"  align=\"center\"></div></td>" +
-                "<td style=\"width='20%'\">安全</td><td style='20%'>" + detailScore.safetyScore + "</td></tr>" +
-                "<tr><td>财务</td><td>" + detailScore.accountScore + "</td></tr>" +
-                "<tr><td>趋势</td><td>" + detailScore.directionScore + "</td></tr>" +
-                "<tr><td>活跃</td><td>" + detailScore.vitalityScore + "</td></tr>" +
-        "<tr><td>事件</td><td>" + detailScore.eventScore + "</td></tr>";
-        return detailTableHtml;
-      }
-
-      setDetailScoreChart = function (keyCaptionData) {
-        var detailKey = keyCaptionData.key;
-        var detailCaption = keyCaptionData.caption;
-        var detailScore = keyCaptionData.data;
-        var divChart = window.document.getElementById('div_' + detailKey);
-        if (divChart != null){
-          var legend_arr = new Array();
-          var series_arr = new Array();
-          //legend_arr[0] = detailCaption;
-          series_arr[0] = {name:detailCaption, value:[detailScore.safetyScore, detailScore.accountScore, detailScore.directionScore, detailScore.vitalityScore, detailScore.eventScore]};
-
-          // 基于准备好的dom，初始化echarts实例
-          var myChart = echarts.init(divChart);
-
-          var option = {
-            title: {
-              text: ''
-            },
-            tooltip: {},
-            legend: {
-              data: legend_arr
-            },
-            radar: {
-              name: {
-                textStyle: {
-                  color: '#fff',
-                  backgroundColor: '#999',
-                  borderRadius: 3,
-                  padding: [3, 5]
+            $.ajax({
+                url: quoteServerRootUrl + '/stockBasic/getStockBasicsOfLikeStr.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    likeStr: q
+                },
+                success: function (result) {
+                    var list = result.result;
+                    var items = $.map(list, function (item, index) {
+                        return {
+                            id: item.stockCode,
+                            name: item.stockName + "(" + item.stockCode + ")"
+                        };
+                    });
+                    success(items);
+                },
+                error: function () {
+                    error.apply(this, arguments);
                 }
-              },
-              indicator: [
-                { name: '安全', max: 100.0},
-                { name: '趋势', max: 100.0},
-                { name: '财务', max: 100.0},
-                { name: '活跃', max: 100.0},
-                { name: '事件', max: 100.0}
-              ]
-            },
-            series: [{
-              name: detailCaption,
-              type: 'radar',
-              // areaStyle: {normal: {}},
-              data : series_arr
-            }]
-          };
+            });
+        };
 
-          // 使用刚指定的配置项和数据显示图表
-          myChart.setOption(option);
+        myselect = function (param) {
+            var stockCode = param.id;
+            $.ajax({
+                url: scoreServerRootUrl + '/stockScore/queryLongScore.do?stockCode=' + stockCode,
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode
+                },
+                success: function (result) {
+                    //{"result":{"totalScore":80.0,"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}
+                    var scoreVo = result.result;
+                    setResult(scoreVo);
+                },
+                error: function () {
+                    error.apply(this, arguments);
+                }
+            })
+        };
+
+        setResult = function (scoreVo) {
+            setScoreHtml(scoreVo);
+            setScoreChart(scoreVo);
         }
-      }
 
+        setScoreHtml = function (scoreVo) {
+            $("#td_safetyScore").html(scoreVo.safetyScore);
+            $("#td_accountScore").html(turnDetailScoreToStr(scoreVo.accountScore));
+            $("#td_directionScore").html(turnDetailScoreToStr(scoreVo.directionScore));
+            $("#td_vitalityScore").html(turnDetailScoreToStr(scoreVo.vitalityScore));
+            $("#td_eventScore").html(turnDetailScoreToStr(scoreVo.eventScore));
+            $("#td_totalScore").html(turnDetailScoreToStr(scoreVo.totalScore));
+        }
 
+        turnDetailScoreToStr = function (detailScore) {
+            return (detailScore >= 0) ? detailScore : "开发中";
+        }
+
+        setScoreChart = function (scoreVo) {
+            var divChart = window.document.getElementById('div_chart2');
+            if (divChart != null) {
+                var detailCaption = "股票分";
+                var legend_arr = new Array();
+                var series_arr = new Array();
+                //legend_arr[0] = detailCaption;
+                series_arr[0] = {
+                    name: detailCaption,
+                    value: [scoreVo.safetyScore, scoreVo.accountScore, scoreVo.directionScore, scoreVo.vitalityScore, scoreVo.eventScore]
+                };
+
+                // 基于准备好的dom，初始化echarts实例
+                var myChart = echarts.init(divChart);
+
+                var option = {
+                    title: {
+                        text: ''
+                    },
+                    tooltip: {},
+                    legend: {
+                        data: legend_arr
+                    },
+                    radar: {
+                        name: {
+                            textStyle: {
+                                color: '#fff',
+                                backgroundColor: '#999',
+                                borderRadius: 3,
+                                padding: [3, 5]
+                            }
+                        },
+                        indicator: [
+                            {name: '安全分', max: 100.0},
+                            {name: '趋势分', max: 100.0},
+                            {name: '财务分', max: 100.0},
+                            {name: '活跃分', max: 100.0},
+                            {name: '事件分', max: 100.0}
+                        ]
+                    },
+                    series: [{
+                        name: detailCaption,
+                        type: 'radar',
+                        // areaStyle: {normal: {}},
+                        data: series_arr
+                    }]
+                };
+
+                // 使用刚指定的配置项和数据显示图表
+                myChart.setOption(option);
+            }
+        }
     </script>
+</head>
 
-  </head>
-
-  <body>
-    <div id="stock_code" class="row">
-      <div class="col-lg-5 col-md-5 col-xs-1-5"></div>
-      <div class="input-group col-lg-2 col-md-2 col-xs-2" style="margin-top:0px positon:relative margin-bottom:20px">
+<body>
+<div id="stock_code" class="row">
+    <div class="col-lg-4 col-md-3 col-xs-2"></div>
+    <!--<div class="input-group col-lg-3 col-md-3 col-xs-3" style="margin-top:0px positon:relative margin-bottom:20px">-->
+    <div class="input-group col-lg-2 col-md-2 col-xs-2">
         <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
                title="请输入股票代码/简拼/全名"
                placeholder="请输入股票代码/简拼/全名"
@@ -202,17 +171,32 @@
                     mode: 'remote',
                     valueField: 'id',
                     textField: 'name'"/>
-      </div>
-      <div class="col-lg-5 col-md-5 col-xs-5"></div>
     </div>
-    <br><br>
+    <div class="col-lg-4 col-md-3 col-xs-2"></div>
+</div>
+<br><br>
+<br><br>
 
-    <div class="row">
-      <div class="col-lg-2 col-md-2 col-xs-2"></div>
-      <div id="div_result" class="col-lg-8 col-md-8 col-xs-8"  style="height:650px; width:100%; overflow:scroll">
-        <table align="center"></table>
-      </div>
-      <div class="col-lg-2 col-md-2 col-xs-2"></div>
+<div class="row">
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+    <div class="col-lg-6 col-md-4 col-xs-4">
+        <table class="table table-bordered">
+            <tr>
+                <td style="width:20%">安全分</td>
+                <td style="width:20%" id="td_safetyScore"></td>
+                <td rowspan="6">
+                    <div id="div_chart2" style="height:300px; width:300px;margin:50px;" align="center"></div>
+                </td>
+            </tr>
+            <tr><td>财务分</td><td id="td_accountScore"></td></tr>
+            <tr><td>趋势分</td><td id="td_directionScore"></td></tr>
+            <tr><td>活跃分</td><td id="td_vitalityScore"></td></tr>
+            <tr><td>事件分</td><td id="td_eventScore"></td></tr>
+            <tr><td>综合得分</td><td id="td_totalScore"></td></tr>
+        </table>
     </div>
-  </body>
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+
+</div>
+</body>
 </html>
