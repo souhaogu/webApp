@@ -66,42 +66,75 @@
         };
 
         myselect = function (param) {
+            //初始化
+            $("#td_stockCode").html("-");
+            $("#td_stockName").html("-");
+            $("#td_listDate").html("-");
+            $("#td_curPrice").html("-");
+            $("#td_safetyScore").html("-");
+
             var stockCode = param.id;
+            //打印基本信息
             $.ajax({
-                url: scoreServerRootUrl + '/stockScore/queryLongScore.do?stockCode=' + stockCode,
+                url: quoteServerRootUrl + '/stockBasic/getStockBasicByStockCode.do',
                 type: "GET",
                 dataType: 'json',
                 data: {
                     stockCode: stockCode
                 },
                 success: function (result) {
-                    //{"result":{"totalScore":80.0,"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}
-                    var scoreVo = result.result;
-                    setResult(scoreVo);
+                    if (result.isSucc) {
+                        var stockVo = result.result;
+                        $("#td_stockCode").html(stockVo.stockCode);
+                        $("#td_stockName").html(stockVo.stockName);
+                        $("#td_listDate").html(stockVo.listDate);
+                    } else {
+                        window.alert(result.error);
+                    }
+                }
+            });
+
+            //打印当前行情
+            $.ajax({
+                url: quoteServerRootUrl + '/realtimeQuote/queryRealtimeQuotes.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode,
+                    recentlyCount : 1
                 },
-                error: function () {
-                    error.apply(this, arguments);
+                success: function (result) {
+                    if (result.isSucc) {
+                        var dayQuoteVoList = result.list;
+                        if (dayQuoteVoList.length >= 1) {
+                            $("#td_curPrice").html(dayQuoteVoList[0].avgPrice);
+                        }
+                    } else {
+                        window.alert(result.error);
+                    }
+                }
+            })
+
+
+            //打印评分
+            $.ajax({
+                url: scoreServerRootUrl + '/stockScore/queryScore.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode
+                },
+                success: function (result) {
+                    if (result.isSucc) {
+                        var scoreVo = result.result;
+                        $("#td_safetyScore").html(scoreVo.safetyScore);
+                        setScoreChart(scoreVo);
+                    } else {
+                        window.alert(result.error);
+                    }
                 }
             })
         };
-
-        setResult = function (scoreVo) {
-            setScoreHtml(scoreVo);
-            setScoreChart(scoreVo);
-        }
-
-        setScoreHtml = function (scoreVo) {
-            $("#td_safetyScore").html(scoreVo.safetyScore);
-            $("#td_accountScore").html(turnDetailScoreToStr(scoreVo.accountScore));
-            $("#td_directionScore").html(turnDetailScoreToStr(scoreVo.directionScore));
-            $("#td_vitalityScore").html(turnDetailScoreToStr(scoreVo.vitalityScore));
-            $("#td_eventScore").html(turnDetailScoreToStr(scoreVo.eventScore));
-            $("#td_totalScore").html(turnDetailScoreToStr(scoreVo.totalScore));
-        }
-
-        turnDetailScoreToStr = function (detailScore) {
-            return (detailScore >= 0) ? detailScore : "开发中";
-        }
 
         setScoreChart = function (scoreVo) {
             var divChart = window.document.getElementById('div_chart2');
@@ -174,29 +207,54 @@
     </div>
     <div class="col-lg-4 col-md-3 col-xs-2"></div>
 </div>
-<br><br>
-<br><br>
+<br>
+<div class="row">
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+    <div class="col-lg-6 col-md-4 col-xs-4">
+        <table class="table table-bordered">
+            <tr>
+                <td colspan="4"><b>基本信息</b></td>
+            </tr>
+            <tr>
+                <td style="width:25%">股票代码</td>
+                <td style="width:25%" id="td_stockCode">-</td>
+                <td style="width:25%" >股票名称</td>
+                <td style="width:25%" id="td_stockName">-</td>
+            </tr>
+            <tr>
+                <td style="width:25%">上市日期</td>
+                <td style="width:25%" id="td_listDate">-</td>
+                <td style="width:25%" >当前股价</td>
+                <td style="width:25%" id="td_curPrice">-</td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+
+</div>
 
 <div class="row">
     <div class="col-lg-3 col-md-2 col-xs-1"></div>
     <div class="col-lg-6 col-md-4 col-xs-4">
         <table class="table table-bordered">
             <tr>
-                <td style="width:20%">安全分</td>
-                <td style="width:20%" id="td_safetyScore"></td>
-                <td rowspan="6">
+                <td style="width:25%" colspan="4"><b>股票分</b></td>
+            </tr>
+            <tr>
+                <td style="width:25%">安全分</td>
+                <td style="width:25%" id="td_safetyScore">-</td>
+                <td rowspan="6" colspan="2" style="width:50%">
                     <div id="div_chart2" style="height:300px; width:300px;margin:50px;" align="center"></div>
                 </td>
             </tr>
-            <tr><td>财务分</td><td id="td_accountScore"></td></tr>
-            <tr><td>趋势分</td><td id="td_directionScore"></td></tr>
-            <tr><td>活跃分</td><td id="td_vitalityScore"></td></tr>
-            <tr><td>事件分</td><td id="td_eventScore"></td></tr>
-            <tr><td>综合得分</td><td id="td_totalScore"></td></tr>
+            <tr><td style="width:25%" >财务分</td><td style="width:25%"  id="td_accountScore">即将推出</td></tr>
+            <tr><td style="width:25%" >趋势分</td><td style="width:25%"  id="td_directionScore">即将推出</td></tr>
+            <tr><td style="width:25%" >活跃分</td><td style="width:25%"  id="td_vitalityScore">即将推出</td></tr>
+            <tr><td style="width:25%" >事件分</td><td style="width:25%"  id="td_eventScore">即将推出</td></tr>
+            <tr><td style="width:25%" >综合得分</td><td style="width:25%"  id="td_totalScore">即将推出</td></tr>
         </table>
     </div>
     <div class="col-lg-3 col-md-2 col-xs-1"></div>
-
 </div>
 </body>
 </html>
