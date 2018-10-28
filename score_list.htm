@@ -66,6 +66,8 @@
             });
         };
 
+        var myChart;
+
         myselect = function (param) {
             //初始化
             $("#td_stockCode").html("-");
@@ -73,6 +75,9 @@
             $("#td_listDate").html("-");
             $("#td_curPrice").html("-");
             $("#td_safetyScore").html("-");
+            if (myChart != null){
+                myChart.clear();
+            }
 
             var stockCode = param.id;
             //打印基本信息
@@ -152,7 +157,7 @@
                 };
 
                 // 基于准备好的dom，初始化echarts实例
-                var myChart = echarts.init(divChart);
+                myChart = echarts.init(divChart);
 
                 var option = {
                     title: {
