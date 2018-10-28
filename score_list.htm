@@ -29,7 +29,7 @@
     <script>
         var quoteServerRootUrl = "https://quote.souhaogu.cn/stock_quote";
         var scoreServerRootUrl = "https://souhaogu.cn/stock_score";
-//        var scoreServerRootUrl = "http://localhost:8080/stock_score";
+        //var scoreServerRootUrl = "http://localhost:8080/stock_score";
         if (window.location.host != '') {
             var curUrl = window.location.href;
             var curPathName = window.location.pathname;
@@ -115,7 +115,7 @@
                     if (result.isSucc) {
                         var dayQuoteVoList = result.list;
                         if (dayQuoteVoList.length >= 1) {
-                            $("#td_curPrice").html(dayQuoteVoList[0].avgPrice);
+                            $("#td_curPrice").html(dayQuoteVoList[0].avgPrice.toFixed(2));
                         }
                     } else {
                         window.alert(result.error);
@@ -135,7 +135,7 @@
                 success: function (result) {
                     if (result.isSucc) {
                         var scoreVo = result.result;
-                        $("#td_safetyScore").html(scoreVo.safetyScore);
+                        $("#td_safetyScore").html(scoreVo.safetyScore.toFixed(2));
                         setScoreChart(scoreVo);
                     } else {
                         window.alert(result.error);
@@ -150,10 +150,10 @@
                 var detailCaption = "股票分";
                 var legend_arr = new Array();
                 var series_arr = new Array();
-                //legend_arr[0] = detailCaption;
+//                legend_arr[0] = detailCaption;
                 series_arr[0] = {
                     name: detailCaption,
-                    value: [scoreVo.safetyScore, scoreVo.accountScore, scoreVo.directionScore, scoreVo.vitalityScore, scoreVo.eventScore]
+                    value: [scoreVo.safetyScore.toFixed(2), scoreVo.accountScore, scoreVo.directionScore, scoreVo.vitalityScore, scoreVo.eventScore]
                 };
 
                 // 基于准备好的dom，初始化echarts实例
@@ -177,11 +177,11 @@
                             }
                         },
                         indicator: [
-                            {name: '安全分', max: 100.0},
-                            {name: '趋势分', max: 100.0},
-                            {name: '财务分', max: 100.0},
-                            {name: '活跃分', max: 100.0},
-                            {name: '事件分', max: 100.0}
+                            {name: '安全分', max: 100.00},
+                            {name: '趋势分', max: 100.00},
+                            {name: '财务分', max: 100.00},
+                            {name: '活跃分', max: 100.00},
+                            {name: '事件分', max: 100.00}
                         ]
                     },
                     series: [{
