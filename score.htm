@@ -1,14 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="images/logo/small_logo.ico">	
-	<title>SoSo - 智能诊股</title>
+    <link rel="icon" href="images/logo/small_logo.ico">
+    <title>股票分，给你的股票打个分</title>
 
     <!-- Bootstrap core CSS -->
     <link href="static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -27,163 +27,206 @@
     <script src="static/echarts/js/echarts.min.js"></script>
 
     <script>
-      //var serverRootUrl = "https://souhaogu.cn";
-      //var serverRootUrl = "http://127.0.0.1:8080";
-      var serverRootUrl = "http://192.168.61.129:8080";
-      if (window.location.host != ''){
-        var curUrl = window.location.href;
-        var curPathName = window.location.pathname;
-        var pos = curUrl.indexOf(curPathName);
-        serverRootUrl = curUrl.substring(0,pos);
-      }
+        isPc = function(){
+            //平台、设备和操作系统
+            var system = {
+                win: false,
+                mac: false,
+                xll: false,
+                ipad:false
+            };
 
-      myloader = function(param,success,error){
-        var q = param.q || '';
-        if (q.length < 2){
-          success({});
-          return false
+            //检测平台
+            var p = navigator.platform;
+            system.win = p.indexOf("Win") == 0;
+            system.mac = p.indexOf("Mac") == 0;
+            system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+            system.ipad = (navigator.userAgent.match(/iPad/i) != null)?true:false;
+            return (system.win || system.mac || system.xll||system.ipad);
         }
-        $.ajax({
-          url: serverRootUrl + '/stock_quote/stockBasic/getStockBasicsOfLikeStr.do',
-          type: "GET",
-          dataType: 'json',
-          data: {
-            likeStr: q
-          },
-          success: function(result){
-            var list = result.result;
-            var items = $.map(list, function(item,index){
-              return {
-                id: item.stockCode,
-                name: item.stockName + "(" + item.stockCode + ")"
-              };
-            });
-            success(items);
-          },
-          error: function(){
-            error.apply(this, arguments);
-          }
-        });
-      };
 
-      myselect = function(param){
-        var stockCode = param.id;
-        $.ajax({
-          url: serverRootUrl + '/stock_score/stockScore/queryLongScore.do?stockCode=SH600000',
-          type: "GET",
-          dataType: 'json',
-          data: {
-            stockCode: stockCode
-          },
-          success: function(result){
-            //{"result":{"totalScore":80.0,"stockDe\ailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"industryDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0},"ideaDetailScoreMap":{"ai":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}},"marketDetailScoreVo":{"safetyScore":80.0,"accountScore":80.0,"directionScore":80.0,"vitality":80.0,"eventScore":80.0}}}
-            var scoreVo = result.result;
-            setTableResult(scoreVo);
-            setChartResult(scoreVo);
-          },
-          error: function(){
-            error.apply(this, arguments);
-          }
-        })
-      };
-
-      setTableResult = function (scoreVo) {
-        var divTable = $("#table_result");
-        if (divTable != null){
-          var tableHtml = "<table class=\"table table-striped .table-bordered\">" +
-                  "<tr><th></th><th>安全</th><th>财务</th><th>趋势</th><th>活跃</th><th>事件</th></tr>" +
-                  "<tr><td>个股</td><td>"+ scoreVo.stockDetailScoreVo.safetyScore + "</td><td>" + scoreVo.stockDetailScoreVo.accountScore + "</td><td>" + scoreVo.stockDetailScoreVo.directionScore + "</td><td>" + scoreVo.stockDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.stockDetailScoreVo.eventScore + "</td></tr>" +
-                  "<tr><td>行业</td><td>"+ scoreVo.industryDetailScoreVo.safetyScore + "</td><td>" + scoreVo.industryDetailScoreVo.accountScore + "</td><td>" + scoreVo.industryDetailScoreVo.directionScore + "</td><td>" + scoreVo.industryDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.industryDetailScoreVo.eventScore + "</td></tr>" +
-                  "<tr><td>市场</td><td>"+ scoreVo.marketDetailScoreVo.safetyScore + "</td><td>" + scoreVo.marketDetailScoreVo.accountScore + "</td><td>" + scoreVo.marketDetailScoreVo.directionScore + "</td><td>" + scoreVo.marketDetailScoreVo.vitalityScore + "</td><td>" + scoreVo.marketDetailScoreVo.eventScore + "</td></tr>";
-          var m = scoreVo.ideaDetailScoreMap;
-          if (m != null){
-            for (var key in m) {
-              var item = m[key];
-              tableHtml = tableHtml +
-              "<tr><td>概念[" + key +"]</td><td>"+ item.safetyScore + "</td><td>" + item.accountScore + "</td><td>" + item.directionScore + "</td><td>" + item.vitalityScore + "</td><td>" + item.eventScore + "</td></tr>";
-            }
-          }
-
-          tableHtml = tableHtml +
-          "<tr><td>综合得分</td><td colspan='5'>"+ scoreVo.totalScore +"</td></tr>" +
-          "</table>";
-          divTable.html(tableHtml);
+        if (!isPc()){
+            window.location.href = "score_m.htm";
         }
-      }
 
-      setChartResult = function (scoreVo) {
-//        var divChart = $("#chart_result");
-        var divChart = window.document.getElementById('chart_result')
-        if (divChart != null){
-          var legend_arr = new Array();
-          var series_arr = new Array();
-          legend_arr[0] = "个股(Stock)";
-          series_arr[0] = {name:"个股(Stock)", value:[scoreVo.stockDetailScoreVo.safetyScore, scoreVo.stockDetailScoreVo.accountScore, scoreVo.stockDetailScoreVo.directionScore, scoreVo.stockDetailScoreVo.vitalityScore, scoreVo.stockDetailScoreVo.eventScore]};
-          legend_arr[1] = "行业(Industry)";
-          series_arr[1] = {name:"行业(Industry)", value:[scoreVo.industryDetailScoreVo.safetyScore, scoreVo.industryDetailScoreVo.accountScore, scoreVo.industryDetailScoreVo.directionScore, scoreVo.industryDetailScoreVo.vitalityScore, scoreVo.industryDetailScoreVo.eventScore]};
-          legend_arr[2] = "市场(Market)";
-          series_arr[2] = {name:"市场(Market)", value:[scoreVo.marketDetailScoreVo.safetyScore, scoreVo.marketDetailScoreVo.accountScore, scoreVo.marketDetailScoreVo.directionScore, scoreVo.marketDetailScoreVo.vitalityScore, scoreVo.marketDetailScoreVo.eventScore]};
-          var m = scoreVo.ideaDetailScoreMap;
-          if (m != null){
-            var index = 3;
-            for (var key in m) {
-              var item = m[key];
-              var legend = "概念_" + key +"(Idea_" + key + ")";
-              legend_arr[index] = legend;
-              series_arr[index] = {name:legend, value:[item.safetyScore, item.accountScore, item.directionScore, item.vitalityScore, item.eventScore]};
-              index ++;
+
+        var quoteServerRootUrl = "https://souhaogu.cn/stock_quote";
+        var scoreServerRootUrl = "https://souhaogu.cn/stock_score";
+        //var scoreServerRootUrl = "http://localhost:8080/stock_score";
+        if (window.location.host != '') {
+            var curUrl = window.location.href;
+            var curPathName = window.location.pathname;
+            var pos = curUrl.indexOf(curPathName);
+            serverRootUrl = curUrl.substring(0, pos);
+        }
+
+        myloader = function (param, success, error) {
+            var q = param.q || '';
+            if (q.length < 2) {
+                success({});
+                return false
             }
-          }
-
-          // 基于准备好的dom，初始化echarts实例
-          var myChart = echarts.init(divChart);
-
-          var option = {
-            title: {
-              text: ''
-            },
-            tooltip: {},
-            legend: {
-              data: legend_arr
-            },
-            radar: {
-              name: {
-                textStyle: {
-                  color: '#fff',
-                  backgroundColor: '#999',
-                  borderRadius: 3,
-                  padding: [3, 5]
+            $.ajax({
+                url: quoteServerRootUrl + '/stockBasic/getStockBasicsOfLikeStr.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    likeStr: q
+                },
+                success: function (result) {
+                    var list = result.result;
+                    var items = $.map(list, function (item, index) {
+                        return {
+                            id: item.stockCode,
+                            name: item.stockName + "(" + item.stockCode + ")"
+                        };
+                    });
+                    success(items);
+                },
+                error: function () {
+                    error.apply(this, arguments);
                 }
-              },
-              indicator: [
-                { name: '安全（safety）', max: 100.0},
-                { name: '趋势（direction）', max: 100.0},
-                { name: '财务（account）', max: 100.0},
-                { name: '活跃（vitality）', max: 100.0},
-                { name: '事件（event）', max: 100.0}
-              ]
-            },
-            series: [{
-              name: '个股 vs 行业 vs 市场 vs 概念（ Stock vs Industry vs Market vs Idea）',
-              type: 'radar',
-              // areaStyle: {normal: {}},
-              data : series_arr
-            }]
-          };
+            });
+        };
 
-          // 使用刚指定的配置项和数据显示图表
-          myChart.setOption(option);
+        var myChart;
+
+        myselect = function (param) {
+            //初始化
+            $("#td_stockCode").html("-");
+            $("#td_stockName").html("-");
+            $("#td_listDate").html("-");
+            $("#td_curPrice").html("-");
+            $("#td_safetyScore").html("-");
+            if (myChart != null){
+                myChart.clear();
+            }
+
+            var stockCode = param.id;
+            //打印基本信息
+            $.ajax({
+                url: quoteServerRootUrl + '/stockBasic/getStockBasicByStockCode.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode
+                },
+                success: function (result) {
+                    if (result.isSucc) {
+                        var stockVo = result.result;
+                        $("#td_stockCode").html(stockVo.stockCode);
+                        $("#td_stockName").html(stockVo.stockName);
+                        var listDateStr = stockVo.listDate;
+                        listDateStr = listDateStr.substr(0,4) + "-" + listDateStr.substr(4,2) + "-" + listDateStr.substr(6,2);
+                        $("#td_listDate").html(listDateStr);
+                    } else {
+                        window.alert(result.error);
+                    }
+                }
+            });
+
+            //打印当前行情
+            $.ajax({
+                url: quoteServerRootUrl + '/realtimeQuote/queryRealtimeQuotes.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode,
+                    recentlyCount : 1
+                },
+                success: function (result) {
+                    if (result.isSucc) {
+                        var dayQuoteVoList = result.list;
+                        if (dayQuoteVoList.length >= 1) {
+                            $("#td_curPrice").html(dayQuoteVoList[0].avgPrice.toFixed(2));
+                        }
+                    } else {
+                        window.alert(result.error);
+                    }
+                }
+            })
+
+
+            //打印评分
+            $.ajax({
+                url: scoreServerRootUrl + '/stockScore/queryScore.do',
+                type: "GET",
+                dataType: 'json',
+                data: {
+                    stockCode: stockCode
+                },
+                success: function (result) {
+                    if (result.isSucc) {
+                        var scoreVo = result.result;
+                        $("#td_safetyScore").html(scoreVo.safetyScore.toFixed(2));
+                        setScoreChart(scoreVo);
+                    } else {
+                        window.alert(result.error);
+                    }
+                }
+            })
+        };
+
+        setScoreChart = function (scoreVo) {
+            var divChart = window.document.getElementById('div_chart2');
+            if (divChart != null) {
+                var detailCaption = "股票分";
+                var legend_arr = new Array();
+                var series_arr = new Array();
+//                legend_arr[0] = detailCaption;
+                series_arr[0] = {
+                    name: detailCaption,
+                    value: [scoreVo.safetyScore.toFixed(2), scoreVo.accountScore, scoreVo.directionScore, scoreVo.vitalityScore, scoreVo.eventScore]
+                };
+
+                // 基于准备好的dom，初始化echarts实例
+                myChart = echarts.init(divChart);
+
+                var option = {
+                    title: {
+                        text: ''
+                    },
+                    tooltip: {},
+                    legend: {
+                        data: legend_arr
+                    },
+                    radar: {
+                        name: {
+                            textStyle: {
+                                color: '#fff',
+                                backgroundColor: '#999',
+                                borderRadius: 3,
+                                padding: [3, 5]
+                            }
+                        },
+                        indicator: [
+                            {name: '安全分', max: 100.00},
+                            {name: '趋势分', max: 100.00},
+                            {name: '财务分', max: 100.00},
+                            {name: '活跃分', max: 100.00},
+                            {name: '事件分', max: 100.00}
+                        ]
+                    },
+                    series: [{
+                        name: detailCaption,
+                        type: 'radar',
+                        // areaStyle: {normal: {}},
+                        data: series_arr
+                    }]
+                };
+
+                // 使用刚指定的配置项和数据显示图表
+                myChart.setOption(option);
+            }
         }
-      }
-
-
     </script>
+</head>
 
-  </head>
-
-  <body>
-    <div id="stock_code" class="container" align="center">
-      <div class="input-group col-lg-3 col-md-3" style="margin-top:0px positon:relative margin-bottom:20px">
+<body>
+<div id="stock_code" class="row">
+    <div class="col-lg-5 col-md-3 col-xs-2"></div>
+    <!--<div class="input-group col-lg-3 col-md-3 col-xs-3" style="margin-top:0px positon:relative margin-bottom:20px">-->
+    <div class="input-group col-lg-2 col-md-2 col-xs-2">
         <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
                title="请输入股票代码/简拼/全名"
                placeholder="请输入股票代码/简拼/全名"
@@ -192,24 +235,48 @@
                     mode: 'remote',
                     valueField: 'id',
                     textField: 'name'"/>
-      </div>
     </div>
-
-    <div class="row"  align="center">
-      <table>
-        <tr>
-          <td>
-            <div id="table_result" class="container">
-            </div>
-          </td>
-          <td>
-            <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-            <div id="chart_result" style="width: 600px; height:600px;">
-            </div>
-          </td>
-        </tr>
-      </table>
+    <div class="col-lg-5 col-md-3 col-xs-2"></div>
+</div>
+<br>
+<div class="row">
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+    <div class="col-lg-6 col-md-4 col-xs-4">
+        <table class="table table-bordered">
+            <tr>
+                <td colspan="4"><b>基本信息</b></td>
+            </tr>
+            <tr>
+                <td style="width:25%">股票代码</td>
+                <td style="width:25%" id="td_stockCode">-</td>
+                <td style="width:25%" >股票名称</td>
+                <td style="width:25%" id="td_stockName">-</td>
+            </tr>
+            <tr>
+                <td style="width:25%">上市日期</td>
+                <td style="width:25%" id="td_listDate">-</td>
+                <td style="width:25%" >当前股价</td>
+                <td style="width:25%" id="td_curPrice">-</td>
+            </tr>
+            <tr>
+                <td style="width:25%" colspan="4"><b>股票分</b></td>
+            </tr>
+            <tr>
+                <td style="width:25%">安全分</td>
+                <td style="width:25%" id="td_safetyScore">-</td>
+                <td rowspan="6" colspan="2" style="width:50%">
+                    <div id="div_chart2" style="height:400px; width:400px;margin:20px;" align="center"></div>
+                </td>
+            </tr>
+            <tr><td style="width:25%" >财务分</td><td style="width:25%"  id="td_accountScore">即将推出</td></tr>
+            <tr><td style="width:25%" >趋势分</td><td style="width:25%"  id="td_directionScore">即将推出</td></tr>
+            <tr><td style="width:25%" >活跃分</td><td style="width:25%"  id="td_vitalityScore">即将推出</td></tr>
+            <tr><td style="width:25%" >事件分</td><td style="width:25%"  id="td_eventScore">即将推出</td></tr>
+            <tr><td style="width:25%" >综合得分</td><td id="td_totalScore">即将推出</td></tr>
+            <tr><td colspan="4">备注：分值范围为0至100之间，分值最高越好，60分为及格分，分值建议仅代表本方观点，不作投资建议！投资有风险，入市需谨慎。</td></tr>
+        </table>
     </div>
-
-  </body>
+    <div class="col-lg-3 col-md-2 col-xs-1"></div>
+</div>
+</body>
 </html>

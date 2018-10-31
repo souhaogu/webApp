@@ -173,9 +173,11 @@
                                 color: '#fff',
                                 backgroundColor: '#999',
                                 borderRadius: 3,
-                                padding: [3, 5]
+                                padding: [1, 1],
+                                fontSize:8
                             }
                         },
+                        nameGap:1,
                         indicator: [
                             {name: '安全分', max: 100.00},
                             {name: '趋势分', max: 100.00},
@@ -200,70 +202,43 @@
 </head>
 
 <body>
-<div id="stock_code" class="row">
-    <div class="col-lg-4 col-md-3 col-xs-2"></div>
-    <!--<div class="input-group col-lg-3 col-md-3 col-xs-3" style="margin-top:0px positon:relative margin-bottom:20px">-->
-    <div class="input-group col-lg-2 col-md-2 col-xs-2">
-        <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
-               title="请输入股票代码/简拼/全名"
-               placeholder="请输入股票代码/简拼/全名"
-               data-options="loader: myloader,
-                    onSelect:myselect,
-                    mode: 'remote',
-                    valueField: 'id',
-                    textField: 'name'"/>
+    <div id="stock_code" class="row">
+        <div class="col-lg-5 col-md-5 col-xs-2"></div>
+        <!--<div class="input-group col-lg-3 col-md-3 col-xs-3" style="margin-top:0px positon:relative margin-bottom:20px">-->
+        <div class="input-group col-lg-2 col-md-2 col-xs-8">
+            <input id="selectStock" class="easyui-combobox bs-searchbox form-control"
+                   title="请输入股票代码/简拼/全名"
+                   placeholder="请输入股票代码/简拼/全名"
+                   data-options="loader: myloader,
+                        onSelect:myselect,
+                        mode: 'remote',
+                        valueField: 'id',
+                        textField: 'name'"/>
+        </div>
+        <div class="col-lg-5 col-md-5 col-xs-2"></div>
     </div>
-    <div class="col-lg-4 col-md-3 col-xs-2"></div>
-</div>
-<br>
-<div class="row">
-    <div class="col-lg-3 col-md-2 col-xs-1"></div>
-    <div class="col-lg-6 col-md-4 col-xs-4">
-        <table class="table table-bordered">
-            <tr>
-                <td colspan="4"><b>基本信息</b></td>
-            </tr>
-            <tr>
-                <td style="width:25%">股票代码</td>
-                <td style="width:25%" id="td_stockCode">-</td>
-                <td style="width:25%" >股票名称</td>
-                <td style="width:25%" id="td_stockName">-</td>
-            </tr>
-            <tr>
-                <td style="width:25%">上市日期</td>
-                <td style="width:25%" id="td_listDate">-</td>
-                <td style="width:25%" >当前股价</td>
-                <td style="width:25%" id="td_curPrice">-</td>
-            </tr>
-        </table>
+    <br>
+    <div class="row">
+        <div class="col-lg-4 col-md-3 col-xs-1"></div>
+        <div class="col-lg-4 col-md-6 col-xs-10">
+            <table class="table table-bordered">
+                <tr><td colspan="2"><b>基本信息</b></td></tr>
+                <tr><td>股票代码</td><td id="td_stockCode">-</td></tr>
+                <tr><td>股票名称</td><td id="td_stockName">-</td></tr>
+                <tr><td>上市日期</td><td id="td_listDate">-</td></tr>
+                <tr><td>当前股价</td><td id="td_curPrice">-</td></tr>
+                <tr><td colspan="2"><b>股票分</b></td></tr>
+                <tr><td>安全分</td><td id="td_safetyScore">-</td></tr>
+                <tr><td>财务分</td><td id="td_accountScore">即将推出</td></tr>
+                <tr><td>趋势分</td><td id="td_directionScore">即将推出</td></tr>
+                <tr><td>活跃分</td><td id="td_vitalityScore">即将推出</td></tr>
+                <tr><td>事件分</td><td id="td_eventScore">即将推出</td></tr>
+                <tr><td>综合得分</td><td id="td_totalScore">即将推出</td></tr>
+                <tr><td colspan="2">备注：分值范围为0至100之间，分值最高越好，60分为及格分，分值建议仅代表本方观点，不作投资建议！投资有风险，入市需谨慎。</td></tr>
+                <tr><td colspan="2"><div id="div_chart2" style="height:250px;"></div></td></tr>
+            </table>
+        </div>
+        <div class="col-lg-4 col-md-3 col-xs-1"></div>
     </div>
-    <div class="col-lg-3 col-md-2 col-xs-1"></div>
-
-</div>
-
-<div class="row">
-    <div class="col-lg-3 col-md-2 col-xs-1"></div>
-    <div class="col-lg-6 col-md-4 col-xs-4">
-        <table class="table table-bordered">
-            <tr>
-                <td style="width:25%" colspan="4"><b>股票分</b></td>
-            </tr>
-            <tr>
-                <td style="width:25%">安全分</td>
-                <td style="width:25%" id="td_safetyScore">-</td>
-                <td rowspan="6" colspan="2" style="width:50%">
-                    <div id="div_chart2" style="height:400px; width:400px;margin:20px;" align="center"></div>
-                </td>
-            </tr>
-            <tr><td style="width:25%" >财务分</td><td style="width:25%"  id="td_accountScore">即将推出</td></tr>
-            <tr><td style="width:25%" >趋势分</td><td style="width:25%"  id="td_directionScore">即将推出</td></tr>
-            <tr><td style="width:25%" >活跃分</td><td style="width:25%"  id="td_vitalityScore">即将推出</td></tr>
-            <tr><td style="width:25%" >事件分</td><td style="width:25%"  id="td_eventScore">即将推出</td></tr>
-            <tr><td style="width:25%" >综合得分</td><td style="width:25%"  id="td_totalScore">即将推出</td></tr>
-            <tr><td colspan="4">备注：分值范围为0至100之间，分值最高越好，60分为及格分，分值建议仅代表本方观点，不作投资建议！投资有风险，入市需谨慎。</td></tr>
-        </table>
-    </div>
-    <div class="col-lg-3 col-md-2 col-xs-1"></div>
-</div>
 </body>
 </html>
